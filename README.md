@@ -46,6 +46,11 @@ Symfony官网的Jobbet教程：<http://symfony.com/legacy/doc/jobeet?orm=Doctrin
 * [第十八天：使用Ajax]()
 * [第十九天：国际化和本地化]()
 
+
+```PHP
+   echo 'ssss';
+```
+
 # 感谢 #
 
 感谢[IntelligentBee](http://www.intelligentbee.com/)提供这么好的文章。
