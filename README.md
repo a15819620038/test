@@ -58,4 +58,4 @@ Symfony官网的Jobbet教程：<http://symfony.com/legacy/doc/jobeet?orm=Doctrin
 
 您可以在以下链接查看该许可证的全文：
 
-![](/imgs/licnse.png)<http://creativecommons.org/licenses/by-nc/3.0/legalcode>
+![](imgs/license.png)<http://creativecommons.org/licenses/by-nc/3.0/legalcode>
