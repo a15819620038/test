@@ -2,11 +2,11 @@
 
 *这一系列文章来源于Fabien Potencier，基于Symfony1.4编写的[Jobeet Tutirual](http://symfony.com/legacy/doc/jobeet?orm=Doctrine)。
 
-假若你现在极其渴望打开你的文本编辑器来开始写PHP代码，那么今天就满足你的心愿，我们会开始做一些开发了。我们会定义Jobeet中使用到的模型，并使用ORM来和数据库交互，并且还会创建应用的第一个模块（module）。由于Symfony已经为我们做了很多工作，所以我们不用写太多的PHP代码就能拥有一个功能齐全的模块。
+假若你现在极其渴望打开你的文本编辑器来开始写PHP代码，那么今天就满足你的心愿，我们会开始做一些开发了。我们会定义`Jobeet`中使用到的模型，并使用ORM来和数据库交互，并且还会创建应用的第一个模块（module）。由于`Symfony`已经为我们做了很多工作，所以我们不用写太多的PHP代码就能拥有一个功能齐全的模块。
 
 ## 关系模型 ##
 
-在[第二天](https://github.com/happen-zhang/symfony2-jobeet-tutorial/blob/master/chapter-02/chapter-02.md)中的用户stories描述了Jobeet项目中的主要对象：职位（jobs），affiliates和分类（categories）。下面是它们之间的实体关系图：
+在[第二天](https://github.com/happen-zhang/symfony2-jobeet-tutorial/blob/master/chapter-02/chapter-02.md)中的用户stories描述了`Jobeet`项目中的主要对象：职位（jobs），affiliates和分类（categories）。下面是它们之间的实体关系图：
 
 ![](imgs/03-01.png)
 
@@ -14,10 +14,10 @@
 
 ## 数据库 ##
 
-为了让职位（jobs），affiliate和分类（categories）能存放在数据库里，Symfony2.3.2使用的[ORM](http://www.doctrine-project.org/projects/orm.html)工具是[Doctrine](http://www.doctrine-project.org/projects/orm.html)。为了能够连接数据库，我们需要编辑`app/config/parameters.yml`文件（这里使用的是MySQL）：
+为了让职位（jobs），affiliate和分类（categories）能存放在数据库里，`Symfony2.3.2`使用的[ORM](http://www.doctrine-project.org/projects/orm.html)工具是[Doctrine](http://www.doctrine-project.org/projects/orm.html)。为了能够连接数据库，我们需要编辑`app/config/parameters.yml`文件（这里使用的是MySQL）：
 
 ```Yml
-\# app/config/parameters.yml
+# app/config/parameters.yml
 parameters:
     database\_driver: pdo\_mysql
     database\_host: localhost
@@ -37,7 +37,7 @@ parameters:
 为了能让`Doctrine`能够了解我们的对象，我们需要创建“元数据”文件来描述对象在数据库中的字段域。我们先在`src/Ibw/JobeetBundle/Resources/config`目录下创建一个`doctrine`目录。`doctribe`目录会包含三个文件：`Category.orm.yml`，`Job.orm.yml`和`Affiliate.orm.yml`。
 
 ```Yml
-\# src/Ibw/JobeetBundle/Resources/config/doctrine/Category.orm.yml
+# src/Ibw/JobeetBundle/Resources/config/doctrine/Category.orm.yml
 Ibw\JobeetBundle\Entity\Category:
     type: entity
     table: category
@@ -61,7 +61,7 @@ Ibw\JobeetBundle\Entity\Category:
 ```
 
 ```Yml
-\# src/Ibw/JobeetBundle/Resources/config/doctrine/Job.orm.yml
+# src/Ibw/JobeetBundle/Resources/config/doctrine/Job.orm.yml
 Ibw\JobeetBundle\Entity\Job:
     type: entity
     table: job
@@ -128,7 +128,7 @@ Ibw\JobeetBundle\Entity\Job:
 ```
 
 ```Yml
-\# src/Ibw/JobeetBundle/Resources/config/doctrine/Affiliate.orm.yml
+# src/Ibw/JobeetBundle/Resources/config/doctrine/Affiliate.orm.yml
 Ibw\JobeetBundle\Entity\Affiliate:
     type: entity
     table: affiliate
