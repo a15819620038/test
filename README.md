@@ -1,279 +1,429 @@
-# 第一天：开始你的Jobeet项目 #
+# 第三天：数据模型 #
 
 *这一系列文章来源于Fabien Potencier，基于Symfony1.4编写的[Jobeet Tutirual](http://symfony.com/legacy/doc/jobeet?orm=Doctrine)。
 
-## 什么是Jobeet？ ##
+假若你现在极其渴望打开你的文本编辑器来开始写PHP代码，那么今天就满足你的心愿，我们会开始做一些开发了。我们会定义Jobeet中使用到的模型，并使用ORM来和数据库交互，并且还会创建应用的第一个模块（module）。由于Symfony已经为我们做了很多工作，所以我们不用写太多的PHP代码就能拥有一个功能齐全的模块。
 
-Jobeet是一个发布求职和招聘信息的网站，它是开源的。在这一些列的教程中会教你怎么实现它。通过这Jobeet实例教程，你将会学到怎么使用最新的Web技术—Symfony2.3.2（你还不知道Symfony是什么？Symfony是一个PHP框架）。
+## 关系模型 ##
 
-对于每一天（每一章），从第一天开始一直到项目完成，你会学会如何去写代码实现一个真实的网站。
+在[第二天](https://github.com/happen-zhang/symfony2-jobeet-tutorial/blob/master/chapter-02/chapter-02.md)中的用户stories描述了Jobeet项目中的主要对象：职位（jobs），affiliates和分类（categories）。下面是它们之间的实体关系图：
 
-在这个教程期间，我们每天（每一章）都会给Jobeet添加新的功能，同时我们也会在开发过程中向你介绍Symfony的新功能和在Web开发中的良好实践。
+![](imgs/03-01.png)
 
-今天是我们的第一天，你不用写任何的代码。相反，你先要搭建好开发环境。
+除了我们在stories中描述的列（columns）之外，我们还添加了`created_at`和`updated_at`列。一个对象被保存或者是被更新的时候，`created_at`和`updated_at`这两个列将被自动更新。
 
-## 搭建开发环境 ##
+## 数据库 ##
 
-首先，你需要去检查一下你的系统上是否能够友好地支持Web开发的环境。我们将会使在VMware虚拟机上使用Ubuntu 12.04 LTS Server进行开发。然后你的系统上需要有Web服务器（例如Apache）、数据库（Mysql）和PHP（版本不低于5.3.3），这些要求都是最基本的。
+为了让职位（jobs），affiliate和分类（categories）能存放在数据库里，Symfony2.3.2使用的[ORM](http://www.doctrine-project.org/projects/orm.html)工具是[Doctrine](http://www.doctrine-project.org/projects/orm.html)。为了能够连接数据库，我们需要编辑`app/config/parameters.yml`文件（这里使用的是MySQL）：
 
-### 1、安装Apache作为你的服务器 ###
+```Yml
+\# app/config/parameters.yml
+parameters:
+    database\_driver: pdo\_mysql
+    database\_host: localhost
+    database\_port: null
+    database\_name: jobeet
+    database\_user: root
+    database\_password: password
+    # ...
+```
 
-    sudo apt-get install apache2
+现在你能让`Doctrine`连接到你的数据库了。你能通过在终端输入下面的命令来让`Doctrine`帮助你生成数据库：
 
-启动Apache的重写模块mod-rewrite：
+    php app/console doctrine:database:create
 
-    sudo a2enmod rewrite
+## 模式 ##
 
-### 2、安装Mysql ###
+为了能让`Doctrine`能够了解我们的对象，我们需要创建“元数据”文件来描述对象在数据库中的字段域。我们先在`src/Ibw/JobeetBundle/Resources/config`目录下创建一个`doctrine`目录。`doctribe`目录会包含三个文件：`Category.orm.yml`，`Job.orm.yml`和`Affiliate.orm.yml`。
 
-    sudo apt-get install mysql-server mysql-client
+```Yml
+\# src/Ibw/JobeetBundle/Resources/config/doctrine/Category.orm.yml
+Ibw\JobeetBundle\Entity\Category:
+    type: entity
+    table: category
+    id:
+        id:
+            type: integer
+            generator: { strategy: AUTO }
+    fields:
+        name:
+            type: string
+            length: 255
+            unique: true
+    oneToMany:
+        jobs:
+            targetEntity: Job
+            mappedBy: category
+    manyToMany:
+        affiliates:
+            targetEntity: Affiliate
+            mappedBy: categories
+```
 
-### 3、安装PHP ###
+```Yml
+\# src/Ibw/JobeetBundle/Resources/config/doctrine/Job.orm.yml
+Ibw\JobeetBundle\Entity\Job:
+    type: entity
+    table: job
+    id:
+        id:
+            type: integer
+            generator: { strategy: AUTO }
+    fields:
+        type:
+            type: string
+            length: 255
+            nullable: true
+        company:
+            type: string
+            length: 255
+        logo:
+            type: string
+            length: 255
+            nullable: true
+        url:
+            type: string
+            length: 255
+            nullable: true
+        position:
+            type: string
+            length: 255
+        location:
+            type: string
+            length: 255
+        description:
+            type: text
+        how_to_apply:
+            type: text
+        token:
+            type: string
+            length: 255
+            unique: true
+        is_public:
+            type: boolean
+            nullable: true
+        is_activated:
+            type: boolean
+            nullable: true
+        email:
+            type: string
+            length: 255
+        expires_at:
+            type: datetime
+        created_at:
+            type: datetime
+        updated_at:
+            type: datetime
+            nullable: true
+    manyToOne:
+        category:
+            targetEntity: Category
+            inversedBy: jobs
+            joinColumn:
+                name: category_id
+                referencedColumnName: id
+    lifecycleCallbacks:
+        prePersist: [ setCreatedAtValue ]
+        preUpdate: [ setUpdatedAtValue ]
+```
 
-    sudo apt-get install php5 libapache2-mod-php5 php5-mysql
+```Yml
+\# src/Ibw/JobeetBundle/Resources/config/doctrine/Affiliate.orm.yml
+Ibw\JobeetBundle\Entity\Affiliate:
+    type: entity
+    table: affiliate
+    id:
+        id:
+            type: integer
+            generator: { strategy: AUTO }
+    fields:
+        url:
+            type: string
+            length: 255
+        email:
+            type: string
+            length: 255
+            unique: true
+        token:
+            type: string
+            length: 255
+        is_active:
+            type: boolean
+            nullable: true
+        created_at:
+            type: datetime
+    manyToMany:
+        categories:
+            targetEntity: Category
+            joinTable:
+                name: category_affiliate
+                joinColumns:
+                    affiliate_id:
+                        referencedColumnName: id
+                inverseJoinColumns:
+                    category_id:
+                        referencedColumnName: id
+    lifecycleCallbacks:
+        prePersist: [ setCreatedAtValue ]
+```
 
-### 4、安装Intl扩展 ###
+## ORM ##
 
-    sudo apt-get install php5-intl
+现在在终端输入下面的命令，`Doctrine`能够生成我们定义好的对应的类了：
 
-### 5、重启Apache ###
+    php app/console doctrine:generate:entities IbwJobeetBundle
 
-    sudo service apache2 restart
+现在你可以在`src/Ibw/JobeetBundle`目录下看到一个`Entity`目录，在`Entity`目录中你可以看到新生成的文件：`Category.php`，`Job.php`和`Affiliate.php`。打开`Job.php`文件，把`created_at`和`updated_at`的值设置如下：
 
-## 下载和安装Symfony2.3.2 ##
-
-你现在需要做的事情是需要在服务器下准备一个目录来存放Jobeet项目。那我们就把那个目录命名为jobeet：/var/www/jobeet。
-
-    mkdir /var/www/jobeet
-
-现在目录已经准备好了，那么我们要在里面放些什么呢？点击<http://symfony.com/download>，选择 Symfony Standard 2.3.2 without vendors（2.3.2标准版）并进行下载。现在，把下载到的文件解压到刚才准备好的jobeet目录中。
-
-## 更新Vendors ##
-
-在这一步中，你将会更新Symfony，你会使用它来开始开发你的应用。一个Symfony项目通常需要依赖很多的扩展库，这些扩展库可以通过一个叫Composer的库来下载，并把下载的扩展库存放在vendor/目录下。
-
-在Symfony2.3.2标准版中，你可以通过Composer来管理依赖库。先把Composer现在到jobeet目录：
-
-    curl -s https://getcomposer.org/installer | php
-
-> 如果你还没有安装curl扩展，那么你可以使用如下的命令进行安装：
-
->     sudo apt-get install curl
-
-接下来，输入下面的命令开始下载所有必须的第三方库：
-
-    php composer.phar install
-
-## 网站服务器配置 ##
-
-一个良好的Web实践是，我们只把浏览器需要访问到的文件放在网站的根目录下，比如css文件，js文件，图片。在Symfony项目中，通常推荐把这些文件放在项目中的web/子目录中。现在来配置你的项目，你需要创建一个虚拟主机（virtual host），打开你终端，输入下面的命令：
-
-    sudo nano /etc/apache2/sites-available/jobeet.local
-
-好了，我们创建了一个jobeet.local的文件。接下来，把下面的代码复制到jobeet.local中，然后按下Control-O，回车进行保存，然后Control-X退出编辑器。
-
-    <VirtualHost *:80>
-        ServerName jobeet.local
-        DocumentRoot /var/www/jobeet/web
-        DirectoryIndex app.php
-        ErrorLog /var/log/apache2/jobeet-error.log
-        CustomLog /var/log/apache2/jobeet-access.log combined
-        <Directory "/var/www/jobeet/web">
-            AllowOverride All
-            Allow from All
-         </Directory>
-    </VirtualHost>
-
-我们在Apache服务器中使用的jobeet.local本地域名需要被声明才能使用。如果你使用的Linux系统，那么你需要找到/etc/hosts文件。如果你使用的是Windows系统，你需要找到c:\Windows\System32\drivers\etc\hosts文件。把下面这行加入到hosts文件的末尾：
-
-    127.0.0.1 jobeet.local
-
-> 如果你是在非本地服务器上进行这些操作，你可以把127.0.0.1替换成远程服务器的ip地址。
-
-为了使以上的配置操作能够生效，你需要启动新配置的虚拟机，重启Apache服务器。打开你的终端，输入一下命令：
-
-    sudo a2ensite jobeet.local
-    sudo service apache2 restart
-
-Symfony有一个自带测试工具来帮助你检查你的开发环境配置是否适合使用Symfony。你可以通过下面的URL来检查你的配置：
-
-<http://jobeet.local/config.php>
-
-![](imgs/01-01.png)
-
-如果你不是在本地主机上运行confoig.php而是在远程的服务器上运行的话，那么你应该修改web/config.php文件，把下面这些限制外部访问的代码给注释掉：
-
-    ```PHP
-    if (!isset($_SERVER['HTTP_HOST'])) {
-        exit('This script cannot be run from the CLI. Run it from a browser.');
+```PHP
+// src/Ibw/JobeetBundle/Entity/Job.php
+// ...
+ 
+    /**
+     * @ORM\PrePersist
+     */
+    public function setCreatedAtValue()
+    {
+        if(!$this->getCreatedAt()) {
+            $this->created_at = new \DateTime();
+        }
     }
-    
-    /*
-    if (!in_array(@$_SERVER['REMOTE_ADDR'], array(
-        '127.0.0.1',
-        '::1',
-    ))) {
-        header('HTTP/1.0 403 Forbidden');
-        exit('This script is only accessible from localhost.');
+ 
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedAtValue()
+    {
+        $this->updated_at = new \DateTime();
     }
-    */
-    
+```
+
+对`Affiliate`类中的`created_at`进行同样的修改：
+
+```PHP
+// src/Ibw/JobeetBundle/Entity/Affiliate.php
+// ...
+ 
+    /**
+     * @ORM\PrePersist
+     */
+    public function setCreatedAtValue()
+    {
+        $this->created_at = new \DateTime();
+    }
+ 
+// ...
+```
+
+上面做的修改会让`Doctrine`在保存对象或者更新对象的时候更新`created_at`和`updated_at`的值。这些Doctrine行为被定义在`Affiliate.orm.yml`和`Job.orm.yml`文件的下面。接下来我们让Doctrine帮助我们生成数据表，输入下面的命令：
+
+    php app/console doctrine:schema:update --force
+
+> 这个任务（task）只能在开发环境（development）中使用。生产环境（production）中更新你的数据库，看以查看[Doctrine migrations](http://symfony.com/doc/current/bundles/DoctrineMigrationsBundle/index.html)。
+
+现在数据表已经创建好了，但数据表中还没有任何的数据。对于一个Web应用，它们往往具有三类数据：`初始数据`（应用运行所需要的数据，在`Jobeet`中我们需要初始用的分类（categories）数据和管理员（admin）数据），`测试数据`（应用程序测试用的数据）和`用户数据`（用户在使用应用的时候创建的）
+
+为了让我们的数据库中能有些`初始数据`，我们使用[DoctrineFixturesBundle](http://symfony.com/doc/current/bundles/DoctrineFixturesBundle/index.html)。我们来按下面的步骤来安装`DoctrineFixturesBundle`：
+
+### 1、添加下面的代码到`composer.json`中的`require`区块中 ###
+
+```JSON
+// composer.json
+// ...
+    "require": {
+        // ...
+        "doctrine/doctrine-fixtures-bundle": "dev-master",
+        "doctrine/data-fixtures": "dev-master"
+    },
+ 
+// ...
+```
+
+### 2、更新`vender`库 ###
+
+    php composer.phar update
+
+### 3、在`app/AppKernel.php`中注册`DoctrineFixturesBundle` ###
+
+```PHP
+// app/AppKernel.php
+// ...
+ 
+public function registerBundles()
+{
+    $bundles = array(
+        // ...
+        new Doctrine\Bundle\FixturesBundle\DoctrineFixturesBundle()
+    );
+ 
     // ...
-    ```PHP
+}
+```
 
-在web/app_dev.php中做和上面相同的修改：
+现在我们已经准备好了，我们在`src/Ibw/JobeetBundle/DataFixtures/ORM`目录下生成一些新类来加载数据：
 
-    ```PHP
-    use Symfony\Component\HttpFoundation\Request;
-    use Symfony\Component\Debug\Debug;
-    
-    // If you don't want to setup permissions the proper way, just uncomment the following PHP line
-    // read http://symfony.com/doc/current/book/installation.html#configuration-and-setup for more information
-    //umask(0000);
-    
-    // This check prevents access to debug front controllers that are deployed by accident to production servers.
-    // Feel free to remove this, extend it, or make something more sophisticated.
-    /*
-    if (isset($_SERVER['HTTP_CLIENT_IP'])
-        || isset($_SERVER['HTTP_X_FORWARDED_FOR'])
-        || !in_array(@$_SERVER['REMOTE_ADDR'], array('127.0.0.1', 'fe80::1', '::1'))
-    ) {
-        header('HTTP/1.0 403 Forbidden');
-        exit('You are not allowed to access this file. Check '.basename(__FILE__).' for more information.');
+```PHP
+// src/Ibw/JobeetBundle/DataFixtures/ORM/LoadCategoryData.php
+<?php
+namespace Ibw\JobeetBundle\DataFixtures\ORM;
+ 
+use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Common\DataFixtures\AbstractFixture;
+use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
+use Ibw\JobeetBundle\Entity\Category;
+ 
+class LoadCategoryData extends AbstractFixture implements OrderedFixtureInterface
+{
+    public function load(ObjectManager $em)
+    {
+        $design = new Category();
+        $design->setName('Design');
+ 
+        $programming = new Category();
+        $programming->setName('Programming');
+ 
+        $manager = new Category();
+        $manager->setName('Manager');
+ 
+        $administrator = new Category();
+        $administrator->setName('Administrator');
+ 
+        $em->persist($design);
+        $em->persist($programming);
+        $em->persist($manager);
+        $em->persist($administrator);
+        $em->flush();
+ 
+        $this->addReference('category-design', $design);
+        $this->addReference('category-programming', $programming);
+        $this->addReference('category-manager', $manager);
+        $this->addReference('category-administrator', $administrator);
     }
-    */
+ 
+    public function getOrder()
+    {
+        return 1; // the order in which fixtures will be loaded
+    }
+}
+```
+
+```PHP
+// src/Ibw/JobeetBundle/DataFixtures/ORM/LoadJobData.php
+<?php
+namespace Ibw\JobeetBundle\DataFixtures\ORM;
+ 
+use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Common\DataFixtures\AbstractFixture;
+use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
+use Ibw\JobeetBundle\Entity\Job;
+ 
+class LoadJobData extends AbstractFixture implements OrderedFixtureInterface
+{
+    public function load(ObjectManager $em)
+    {
+         $job_sensio_labs = new Job();
+         $job_sensio_labs->setCategory($em->merge($this->getReference('category-programming')));
+         $job_sensio_labs->setType('full-time');
+         $job_sensio_labs->setCompany('Sensio Labs');
+         $job_sensio_labs->setLogo('sensio-labs.gif');
+         $job_sensio_labs->setUrl('http://www.sensiolabs.com/');
+         $job_sensio_labs->setPosition('Web Developer');
+         $job_sensio_labs->setLocation('Paris, France');
+         $job_sensio_labs->setDescription('You\'ve already developed websites with symfony and you want to work with Open-Source technologies. You have a minimum of 3 years experience in web development with PHP or Java and you wish to participate to development of Web 2.0 sites using the best frameworks available.');
+         $job_sensio_labs->setHowToApply('Send your resume to fabien.potencier [at] sensio.com');
+         $job_sensio_labs->setIsPublic(true);
+         $job_sensio_labs->setIsActivated(true);
+         $job_sensio_labs->setToken('job_sensio_labs');
+         $job_sensio_labs->setEmail('job@example.com');
+         $job_sensio_labs->setExpiresAt(new \DateTime('+30 days'));
+         $job_extreme_sensio = new Job();
+         $job_extreme_sensio->setCategory($em->merge($this->getReference('category-design')));
+         $job_extreme_sensio->setType('part-time');
+         $job_extreme_sensio->setCompany('Extreme Sensio');
+         $job_extreme_sensio->setLogo('extreme-sensio.gif');
+         $job_extreme_sensio->setUrl('http://www.extreme-sensio.com/');
+         $job_extreme_sensio->setPosition('Web Designer');
+         $job_extreme_sensio->setLocation('Paris, France');
+         $job_extreme_sensio->setDescription('Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in.');
+         $job_extreme_sensio->setHowToApply('Send your resume to fabien.potencier [at] sensio.com');
+         $job_extreme_sensio->setIsPublic(true);
+         $job_extreme_sensio->setIsActivated(true);
+         $job_extreme_sensio->setToken('job_extreme_sensio');
+         $job_extreme_sensio->setEmail('job@example.com');
+         $job_extreme_sensio->setExpiresAt(new \DateTime('+30 days'));
+ 
+         $em->persist($job_sensio_labs);
+         $em->persist($job_extreme_sensio);
+         $em->flush();
+    }
+ 
+    public function getOrder()
+    {
+        return 2; // the order in which fixtures will be loaded
+    }
+}
+```
+
+现在我们已经把fixtures写好了，我们可以使用下面的命令来加载这些数据：
+
+    php app/console doctrine:fixtures:load
+
+现在你可以去数据库看看，你可以看到数据表中已经有数据了。
+
+## 查看浏览器 ##
+
+运行下面的命令，它将会创建一个新的控制器（controller）`src/Ibw/JobeetBundle/Controllers/JobController.php`，这个控制器还带有CURD动作（Action）。
     
-    $loader = require_once __DIR__.'/../app/bootstrap.php.cache';
-    Debug::enable();
-    
-    require_once __DIR__.'/../app/AppKernel.php';
-    
-    // ...
-    ```
+    php app/console doctrine:generate:crud --entity=IbwJobeetBundle:Job --route-prefix=ibw_job --with-write --format=yml
 
-当你运行config.php后，Symfony可能会需要你满足要求。完成下面这些配置能够帮助你消除”warnings“。
+运行命令之后，选择默认的答案（answer）即可，这可能需要被要求做一些配置。
 
-### 1、为app/cache和app/logs修改权限 ###
+为了能在浏览器中浏览，我们需要导入（import）新生成的路由（routes）文件`src/Ibw/JobeetBundle/Resources/config/routing/job.yml`到主路由文件中：
 
-    sudo chmod -R 777 app/cache
-    sudo chmod -R 777 app/logs
-    sudo setfacl -dR -m u::rwX app/cache app/logs
+```Yml
+# src/Ibw/JobeetBundle/Resources/config/routing.yml
+IbwJobeetBundle_job:
+        resource: "@IbwJobeetBundle/Resources/config/routing/job.yml"
+        prefix:   /job
+ 
+# ...
+```
 
-> 如果你还没有ACL，请先安装：
+同时我们需要在`Category`类中添加`__toString()`方法，这个能让`job`表单能够下拉选择类别（category）：
 
->     sudo apt-get install acl
+```PHP
+// src/Ibw/JobeetBundle/Entity/Category.php
+// ...
+ 
+public function __toString()
+{
+    return $this->getName() ? $this->getName() : "";
+}
+ 
+// ...
+```
 
-### 2、设置php.ini中的date.timezone配置 ###
+清除缓存：
 
-    date.timezone = Europe/Bucharest # date.timezone = Asia/Shanghai
-
-    sudo nano /etc/php5/apache2/php.ini
-
-在php.ini文件中的[data]部分找到date.timezone配置项，然后删除前面的“;”。
-
-### 3、设置php.ini中的short_open_tag为false ###
-
-    short_open_tag
-        Default Value: Off
-
-### 4、安装PHP加速器（推荐使用APC） ###
-
-    sudo apt-get install php-apc
-    sudo service apache2 restart
-
-重启Apache，在浏览器中输入<http://jobeet.local/app_dev.php>，你将会看到下面这个页面：
-
-![](imgs/01-02.png)
-
-## Symfony2控制台 ##
-
-Symfony2自带了一个命令行工具，你可以使用它来完成不同任务。
-
-你可以输入下面的命令，查看Symfony控制台能为你做些什么：
-
-    php app/console list
-
-## 创建应用程序的bundle ##
-
-### bundle（包）是什么 ###
-
-bundle十分类似于其他应用程序中的插件（plugin），但bundle比它们更好。在Symfony2.3.2中，所有的一切都是Bundle，包括核心的框架功能，还有你的应用中的代码。
-
-一个bundle就是实现一个功能的接口，它由许多文件组成，这些文件有组织地被放在一起，这就组成了一个Bundle（包）。
-
-> Tips：一个Bundle能够在任何地方使用，只要它能够被自动加载（app/autoload.php）。
-> 在里可以了解更多关于bundle系统：<http://symfony.com/doc/current/book/page_creation.html#the-bundle-system>
-
-### 创建基本的bundle框架 ###
-
-执行下面的命令启动Symfony的bundle生成器：
-
-    php app/console generate:bundle --namespace=Ibw/JobeetBundle
-
-执行以上的命令后，在生成bundle之前，生成器会问你几个问题。下面是这些问题和答案（除了有一个不是默认的，其他全部都是默认的）
-
-    Bundle name [IbwJobeetBundle]: IbwJobeetBundle
-    Target directory [/var/www/jobeet/src]: /var/www/jobeet/src
-    Configuration format (yml, xml, php, or annotation) [yml]: yml
-    Do you want to generate the whole directory structure [no]? yes
-    Do you confirm generation [yes]? yes
-    Confirm automatic update of your Kernel [yes]? yes
-    Confirm automatic update of the Routing [yes]? yes
-
-生成bundle之后，清除cache：
-
-    php app/console cache:clear --env=prod
     php app/console cache:clear --env=dev
-
-新生成的bundle可以在src目录下找到：src/Ibw/JobeetBundle。bundle生成器会生成一个DefaultController，在这个控制器中有一个indexAction方法。你可以通过下面的URL访问：<http://jobeet.local/hello/jobeet>或者<http://jobeet.local/app_dev.php/hello/jobeet>
-
-## 删除AcmeDemoBundle ##
-
-Symfony2.3.2标准版中自带了一个完整的demo，它叫做AcmeDemoBundle。它是一个很好的参照样例，但你最终还是需要删除它的。
-
-### 1、输入下面的命令删除Acme目录 ###
-
-    rm -rf /var/www/jobeet/src/Acme
-
-### 2、修改/var/www/jobeet/app/AppKernel.php中 ###
-
-    ```PHP
-    // ...
-    
-    $bundles[] = new Acme\DemoBundle\AcmeDemoBundle();
-    
-    // ...
-    ```
-
-### 3、修改app/config/routing_dev.yml ###
-
-    ```Yml
-    # ... 
-    
-    # AcmeDemoBundle routes (to be removed)
-    _acme_demo:
-        resource: "@AcmeDemoBundle/Resources/config/routing.yml"
-    ```
-
-### 4、清除cache ###
-
     php app/console cache:clear --env=prod
-    php app/console cache:clear --env=dev
 
-## 环境 ##
+现在你可以在浏览器中测试一下了：`http://jobeet.local/job/`，或者在开发环境中的`http://jobeet.local/app_dev.php/job/`。
 
-Symfony2.3.2拥有不同的环境。如果你去查看web目录，你会发现有两个php文件：app\_dev.php和app.php。这两个文件被叫做“前端控制器”，所有的请求都需要通过它们。app.php文件被用在Production环境，而app\_dev.php则被用在Development环境。在Development环境下是十分方便的，因为它能够把所有程序中出现的的errors和warnings显示在调试栏（Debug Toolbar）上—开发者的最好的小伙伴。
+![](imgs/03-02.png)
 
-好了，今天就先到这。在下一天（章）中，我们将会给详细你讲解Jobeet都可以有哪些功能。
+现在你能够添加或者编辑职位（jobs）了。你可以试着让必填项留空或者输入无效的数据。是的，你可以看到Symfony已经创建了基本的验证规则，这些都有是按照数据表来定义的。
+
+今天就这些了。我们勉强地写了一些PHP代码，同时也有了一个职位（job）模型和职位模块（module）。明天我们就来熟悉一下控制器（controller）和视图（view）吧，明天见。
 
 # 许可证 #
 
 如果您需要转载的话，请尊重原作者的知识产权，您可以通过把如下链接放到您转载文章中的头部或者尾部，谢谢。
 
-原文链接：<http://www.intelligentbee.com/blog/2013/08/07/symfony2-jobeet-day-1-starting-up-the-project/>
+原文链接：<http://www.intelligentbee.com/blog/2013/08/09/symfony2-jobeet-day-3-the-data-model/>
 
 您可以在以下链接查看该许可证的全文：
 
-![](imgs/license.png)
+![](../imgs/license.png)
 
 <http://creativecommons.org/licenses/by-nc/3.0/legalcode>
