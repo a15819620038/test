@@ -29,7 +29,7 @@ Symfony官网的Jobeet教程：<http://symfony.com/legacy/doc/jobeet?orm=Doctrin
 # 目录 #
 
 * [第一天：开始你的Jobeet项目](https://github.com/happen-zhang/symfony2-jobeet-tutorial/blob/master/chapter-01/chapter-01.md)
-    * [什么是Jobeet？](https://github.com/happen-zhang/symfony2-jobeet-tutorial/blob/master/chapter-01/chapter-01.md#什么是Jobeet？)
+    * [什么是Jobeet？](https://github.com/happen-zhang/symfony2-jobeet-tutorial/blob/master/chapter-01/chapter-01.md#下载和安装Symfony2.3.2)
 * [第二天：Jobeet是什么](https://github.com/happen-zhang/symfony2-jobeet-tutorial/blob/master/chapter-02/chapter-02.md)
 * [第三天：数据模型](https://github.com/happen-zhang/symfony2-jobeet-tutorial/blob/master/chapter-03/chapter-03.md)
 * [第四天：控制器和视图]()
