@@ -31,6 +31,7 @@ Symfony官网的Jobeet教程：<http://symfony.com/legacy/doc/jobeet?orm=Doctrin
 * [第一天：开始你的Jobeet项目](https://github.com/happen-zhang/symfony2-jobeet-tutorial/blob/master/chapter-01/chapter-01.md)
     * [什么是Jobeet？](https://github.com/happen-zhang/symfony2-jobeet-tutorial/blob/master/chapter-01/chapter-01.md#%E4%BB%80%E4%B9%88%E6%98%AFjobeet)
     * [搭建开发环境](https://github.com/happen-zhang/symfony2-jobeet-tutorial/blob/master/chapter-01/chapter-01.md#%E6%90%AD%E5%BB%BA%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83)
+    * [下载和安装Symfony2.3.2](https://github.com/happen-zhang/symfony2-jobeet-tutorial/blob/master/chapter-01/chapter-01.md#%E4%B8%8B%E8%BD%BD%E5%92%8C%E5%AE%89%E8%A3%85symfony232)
     * [更新Vendors](https://github.com/happen-zhang/symfony2-jobeet-tutorial/blob/master/chapter-01/chapter-01.md#%E6%9B%B4%E6%96%B0vendors)
     * [网站服务器配置](https://github.com/happen-zhang/symfony2-jobeet-tutorial/blob/master/chapter-01/chapter-01.md#%E7%BD%91%E7%AB%99%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%85%8D%E7%BD%AE)
     * [Symfony2控制台](https://github.com/happen-zhang/symfony2-jobeet-tutorial/blob/master/chapter-01/chapter-01.md#symfony2%E6%8E%A7%E5%88%B6%E5%8F%B0)
