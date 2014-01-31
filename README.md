@@ -39,6 +39,7 @@ Symfony官网的Jobeet教程：<http://symfony.com/legacy/doc/jobeet?orm=Doctrin
     * [删除AcmeDemoBundle](https://github.com/happen-zhang/symfony2-jobeet-tutorial/blob/master/chapter-01/chapter-01.md#%E5%88%A0%E9%99%A4acmedemobundle)
     * [环境](https://github.com/happen-zhang/symfony2-jobeet-tutorial/blob/master/chapter-01/chapter-01.md#%E7%8E%AF%E5%A2%83)
 * [第二天：Jobeet是什么](https://github.com/happen-zhang/symfony2-jobeet-tutorial/blob/master/chapter-02/chapter-02.md)
+    * [用户 Stories](https://github.com/happen-zhang/symfony2-jobeet-tutorial/blob/master/chapter-02/chapter-02.md#%E7%94%A8%E6%88%B7-stories)
 * [第三天：数据模型](https://github.com/happen-zhang/symfony2-jobeet-tutorial/blob/master/chapter-03/chapter-03.md)
 * [第四天：控制器和视图]()
 * [第五天：路由]()
