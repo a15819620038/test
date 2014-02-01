@@ -4,7 +4,7 @@
 
 ## Doctrine查询对象 ##
 
-在第二天中我们有这样的一个需求（requirements）：“在`job`首页显示最新和有效的（active）`job`列表”。我们现在的首页显示的是全部的`job`，而没有考虑`job`是否有效的。
+在第二天中我们有这样的一个需求（requirements）：“在`job`首页显示最新和有效的（active）`job`列表”。我们现在的首页显示的是全部的`job`，而没有考虑`job`是否有效。
 
 ```PHP
 // src/Ibw/JobeetBundle/Controller/JobController.php
@@ -28,7 +28,7 @@ class JobController extends Controller
 
 一个有效的`job`意味着这个`job`发布的日期不超过30天。`$entities = $em->getRepository('IbwJobeetBundle')->findAll()`这行代码是从数据库中取出所有的`job`数据，因为我们没有指定任何的查询条件。
 
-我们来做些修改，是它只取出有效的（active）的`job`：
+我们来做些修改，使它只取出有效的（active）的`job`：
 
 ```PHP
 // src/Ibw/JobeetBundle/Controller/JobController.php
@@ -49,7 +49,7 @@ public function indexAction()
 
 ## 调试Doctrine生成的SQL ##
 
-有时候看看`Doctrine`生成出来的SQL对我们还是很有帮助的，比如`Doctrine`的查询得不到我们期望结果的时候。在开发环境（development）下，多亏有`Symfony`的调试工具栏（浏览器页面的最下面的那条栏），对我们开发过程中有用的信息都能在那里找到，包括刚才说的`SQL`调试（http://jobeet.local/app_dev.php）。
+有时候看看`Doctrine`生成出来的SQL对我们还是很有帮助的，比如`Doctrine`的查询得不到我们期望结果的时候。在开发环境（development）下，多亏有`Symfony`的调试工具栏（浏览器页面的最下面的那条栏），对我们开发过程中有用的信息都能在那里找到，包括刚才说的`SQL`调试（<http://jobeet.local/app_dev.php>）。
 
 ![](imgs/06-01.png)
 
