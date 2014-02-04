@@ -12,23 +12,23 @@ Symfony2集成了一个独立的测试库：*PHPUtil*，它为你提供了一个
 
 >     sudo apt-get install phpunit
 
->     sudo pear channel-discover pear.phpunit.de
+      sudo pear channel-discover pear.phpunit.de
 
->     sudo pear channel-discover pear.symfony-project.com
+      sudo pear channel-discover pear.symfony-project.com
 
->     sudo pear channel-discover components.ez.no
+      sudo pear channel-discover components.ez.no
 
->     sudo pear channel-discover pear.symfony.com
+      sudo pear channel-discover pear.symfony.com
 
->     sudo pear update-channels
+      sudo pear update-channels
 
->     sudo pear upgrade-all
+      sudo pear upgrade-all
 
->     sudo pear install pear.symfony.com/Yaml
+      sudo pear install pear.symfony.com/Yaml
 
->     sudo pear install --alldeps phpunit/PHPUnit
+      sudo pear install --alldeps phpunit/PHPUnit
 
->     sudo pear install --force --alldeps phpunit/PHPUnit
+      sudo pear install --force --alldeps phpunit/PHPUnit
 
 不管是单元测试还是功能测试，它都是一个存放在你bundle里的*Tests/*子目录下的一个PHP类。如果你遵循了这个约定，那么就就可以在终端下运行下面的命令来对你的应用程序进行测试：
 
